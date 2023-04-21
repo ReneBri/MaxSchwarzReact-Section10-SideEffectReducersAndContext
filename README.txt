@@ -112,6 +112,194 @@ Introducing useReducer() and Reducers in General
     ///////////////////////////////////////////////////////////////////////////////////////////
 
 
+120. Introducting React Context (Context API)
+    The Context API is a way of solving a problem in React called prop drilling or prop chaining. This is where state is passed through multiple components, where it isnt used, just so it can reach a component where it is needed. This usually makes for a very messy developer experience and a very messy app.js file. Think of situations such as user data once theyve logged in, or items in a customers cart. 
+
+    The Context API is basically a component-wide, behind the scenes state storage system!
+
+    To use context in your app you need to do three things: 
+        1. declare it in an initial context.js file like the one we have in the context folder in this project 
+        2. wrap it / provide it to. Say all components that are wrapped by it should have access to it
+        3. you then need to consume it. Hook into it/listen to it.
+
+    When you declare your initial context, having content in the object is actually optional. It is handy to have it in there because of VSCode's intellisense BUT the only values that actually get passed are the values in the <AuthContext.Provider value={ { isLoggedIn: true } }>. Weird, I know. When adding values in the initial AuthContext object you should always use the correct datatype, for example: { isLoggedIn: true, onLogout: () => {} }.
+
+    Providing means that you have to wrap in the jsx code all the components you want to have access to your context. Any component which is not wrapped will not be able to listen.
+
+    When wrapping we use: 
+        <AuthContext.Provider value={ {isLoggedIn: false} }> 
+            <AllOtherComponentsHere /> 
+            <AllOtherComponentsHere /> 
+            <AllOtherComponentsHere /> 
+        </AuthContext.Provider>
+
+    Remember here the AuthContext is a object and the .Provider is a component in that object.
+
+    Since it is a component, if it encapsulates the whole app, we dont need to have a wrapper for it itsself.
+
+    NOW FOR THE CONSUMPTION OF THE CONTEXT 
+
+    We can also use another property of the AuthContext object - AuthContext.Consumer - We don't typically use this, we normally make a hook BUT this is an option.
+
+    The consumer works in much the same way as the provider in the sense that we then wrap it around some jsx code. BThe consumer takes a child which is actually a function, where we get access to the context. It goes like so: 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    import AuthContext from '../context/auth-context';
+
+    const Navigation = (props) => {
+        return (
+            <AuthContext.Consumer>
+            {(ctx) => {
+                <nav className={classes.nav}>
+                <ul>
+                    {ctx.isLoggedIn && (
+                    <li>
+                        <a href="/">Users</a>
+                    </li>
+                    )}
+                    {ctx.isLoggedIn && (
+                    <li>
+                        <a href="/">Admin</a>
+                    </li>
+                    )}
+                    {ctx.isLoggedIn && (
+                    <li>
+                        <button onClick={props.onLogout}>Logout</button>
+                    </li>
+                    )}
+                </ul>
+                </nav>
+            }}
+            </AuthContext.Consumer>
+        );
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    NOW FOR THE MORE ELEGENT WAY OF CONSUMING THE CONTEXT API! 
+
+    So the more elegent way is way friggin easier.
+
+    Heres the same cade as before but using the useContext hook.
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    import { useContext } from 'react';
+
+
+    const Navigation = (props) => {
+
+        const { isLoggedIn } = useContext(AuthContext)
+        
+        return (
+                <nav className={classes.nav}>
+                    <ul>
+                    {isLoggedIn && (
+                        <li>
+                        <a href="/">Users</a>
+                        </li>
+                    )}
+                    {isLoggedIn && (
+                        <li>
+                        <a href="/">Admin</a>
+                        </li>
+                    )}
+                    {isLoggedIn && (
+                        <li>
+                        <button onClick={props.onLogout}>Logout</button>
+                        </li>
+                    )}
+                    </ul>
+                </nav>
+        );
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    In addition to this we can also make out own Context Provider component. The benefits of this is that we can have all of the functionality associated with, lets say, the user login, user info and user logout, in one place, which wraps all of the components which need that information.
+
+    We add this component into the auth-context file which houses the original auth context object.
+
+    We can then wrap the App component in this new custom context provider and then use the useContext hook in whichever component we need that piece of state! YEEEHAWWWW!
+
+    Heres the new auth-context file 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    import React, { useState, useEffect } from 'react';
+
+    // initialize the AuthContext object
+    const AuthContext = React.createContext({
+        isLoggedIn: false,
+        onLogout: () => {},
+        onLogin: (email, password) => {}
+    });
+
+    // this is a new component which wraps the AuthContext.Provider component and provides all of the user logic.
+
+    export const AuthContextProvider = props => {
+
+        const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+        const loginHandler = (email, password) => {
+            localStorage.setItem('isLoggedIn', '1');
+            setIsLoggedIn(true);
+        };
+
+            const logoutHandler = () => {
+            localStorage.setItem('isLoggedIn', '0');
+            setIsLoggedIn(false);
+        };
+
+        useEffect(() => {
+
+            const storedUserLoggedInInformation = localStorage.getItem('isLoggedIn');
+
+            if(storedUserLoggedInInformation === '1'){
+                setIsLoggedIn(true);
+            }else{
+                setIsLoggedIn(false);
+            }
+        }, [])
+
+        return (
+            <AuthContext.Provider value={{ isLoggedIn: isLoggedIn, onLogout: logoutHandler, onLogin: loginHandler }}>
+                {props.children}
+            </AuthContext.Provider>
+        )
+    }
+
+    export default AuthContext;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    Once we wrap the <App /> in this then in each component we have to do this 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    import { useContext } from 'react';
+
+    import AuthContext from '../context/AuthContext';
+
+    const Component = props => {
+        const { isLoggedIn } = useContext(AuthContext);
+
+        return (
+            <div className=color isLoggedIn ? 'green' : 'red'>
+            </div>
+        )
+    }
+
+    export default Component;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    Context limitations: 
+        Context is not optimised for high frequency changes. No input onChange, etc. Redux is apparently a solution for this!
+
+        Context should not be used to replace all component communications and props.
+
 
 
 
