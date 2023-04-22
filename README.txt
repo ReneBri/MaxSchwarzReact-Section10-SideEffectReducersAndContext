@@ -119,12 +119,12 @@ Introducing useReducer() and Reducers in General
 
     To use context in your app you need to do three things: 
         1. declare it in an initial context.js file like the one we have in the context folder in this project 
-        2. wrap it / provide it to. Say all components that are wrapped by it should have access to it
+        2. wrap it / provide it. Say all components that are wrapped by it should have access to it
         3. you then need to consume it. Hook into it/listen to it.
 
     When you declare your initial context, having content in the object is actually optional. It is handy to have it in there because of VSCode's intellisense BUT the only values that actually get passed are the values in the <AuthContext.Provider value={ { isLoggedIn: true } }>. Weird, I know. When adding values in the initial AuthContext object you should always use the correct datatype, for example: { isLoggedIn: true, onLogout: () => {} }.
 
-    Providing means that you have to wrap in the jsx code all the components you want to have access to your context. Any component which is not wrapped will not be able to listen.
+    'Providing' means that you have to wrap in the jsx code all the components you want to have access to your context. Any component which is not wrapped will not be able to listen.
 
     When wrapping we use: 
         <AuthContext.Provider value={ {isLoggedIn: false} }> 
@@ -135,13 +135,11 @@ Introducing useReducer() and Reducers in General
 
     Remember here the AuthContext is a object and the .Provider is a component in that object.
 
-    Since it is a component, if it encapsulates the whole app, we dont need to have a wrapper for it itsself.
-
     NOW FOR THE CONSUMPTION OF THE CONTEXT 
 
     We can also use another property of the AuthContext object - AuthContext.Consumer - We don't typically use this, we normally make a hook BUT this is an option.
 
-    The consumer works in much the same way as the provider in the sense that we then wrap it around some jsx code. BThe consumer takes a child which is actually a function, where we get access to the context. It goes like so: 
+    The consumer works in much the same way as the provider in the sense that we then wrap it around some jsx code. The consumer takes a child which is actually a function, where we get access to the context. It goes like so: 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -181,11 +179,12 @@ Introducing useReducer() and Reducers in General
 
     So the more elegent way is way friggin easier.
 
-    Heres the same cade as before but using the useContext hook.
+    Heres the same cade as before but using the useContext hook instead of the Comsumer component.
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     import { useContext } from 'react';
+    import AuthContext from '../context/auth-context';
 
 
     const Navigation = (props) => {
@@ -217,7 +216,7 @@ Introducing useReducer() and Reducers in General
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    In addition to this we can also make out own Context Provider component. The benefits of this is that we can have all of the functionality associated with, lets say, the user login, user info and user logout, in one place, which wraps all of the components which need that information.
+    In addition to this we can also make our own Context Provider component. The benefits of this is that we can have all of the functionality associated with, lets say, the user login, user info and user logout, in one place, which wraps all of the components that need that information.
 
     We add this component into the auth-context file which houses the original auth context object.
 
@@ -274,7 +273,7 @@ Introducing useReducer() and Reducers in General
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    Once we wrap the <App /> in this then in each component we have to do this 
+    Once we wrap the <App /> in this then in each component we just have to do this to access the context.
 
     ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -299,6 +298,19 @@ Introducing useReducer() and Reducers in General
         Context is not optimised for high frequency changes. No input onChange, etc. Redux is apparently a solution for this!
 
         Context should not be used to replace all component communications and props.
+
+
+126. Learning the 'Rules of Hooks'
+    Formal definition for rules 
+
+        1. You must only call React hooks in React component functions (or custom hooks). For example we cant declare state before/outside of out component declarations. Also, as another example, we cant declare state or a useEffect or whatever hook inside of a handler function. We can set the state, but we CANNOT call a hook inside of one.
+
+        2. You must only call react hooks at the top level of a function. Don't call them in nested functions and dont call them in any block statements. Black statements are groups of code between {}, for example after an if() statement. 
+
+        Bonus rule on useEffect: Always add everything you use inside of a useEffect as a dependency, unless there is a really good reason not to do that. And dont add browser APIs/global APIs.
+
+
+128. Diving into 'Forward Refs'
 
 
 
