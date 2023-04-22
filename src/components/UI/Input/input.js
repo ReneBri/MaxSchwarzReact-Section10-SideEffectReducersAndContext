@@ -1,7 +1,22 @@
+import React, { useRef, useImperativeHandle } from 'react';
 
 import classes from './Input.module.css';
 
-const Input = props => {
+const Input = React.forwardRef((props, ref) => {
+
+    const inputRef = useRef();
+
+    const focus = () => {
+        inputRef.current.focus();
+    }
+
+    // this here is the externally available object we can access in the parent file.
+    useImperativeHandle(ref, () => {
+        return {
+            focus: focus,
+            id: '101'
+        }
+    });
 
 
     return (
@@ -18,10 +33,11 @@ const Input = props => {
                 value={props.value}
                 onChange={props.onChange}
                 onBlur={props.onBlur}
+                ref={inputRef}
             />
         </div>
 
     )
-}
+})
 
 export default Input

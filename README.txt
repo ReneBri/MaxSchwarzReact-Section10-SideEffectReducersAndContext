@@ -305,13 +305,89 @@ Introducing useReducer() and Reducers in General
 
         1. You must only call React hooks in React component functions (or custom hooks). For example we cant declare state before/outside of out component declarations. Also, as another example, we cant declare state or a useEffect or whatever hook inside of a handler function. We can set the state, but we CANNOT call a hook inside of one.
 
-        2. You must only call react hooks at the top level of a function. Don't call them in nested functions and dont call them in any block statements. Black statements are groups of code between {}, for example after an if() statement. 
+        2. You must only call react hooks at the top level of a functional component. Don't call them in nested functions and dont call them in any block statements. Block statements are groups of code between {}, for example after an if() statement. 
 
         Bonus rule on useEffect: Always add everything you use inside of a useEffect as a dependency, unless there is a really good reason not to do that. And dont add browser APIs/global APIs.
 
 
 128. Diving into 'Forward Refs'
+    So, let's make a couple of terms clear here before we begin: 
+        1. Imperative programming is a way of programming where your code shows exactly what you want to happen in your code. 
+        2. Declarative programming is when your code shows what you want to happen.
 
+        Lets show this in a couple of real world analogies: 
+
+            If you wanted the gutters of your house cleaned and the roof painted, you would tell the workmen 'I want my roof painted red and all of the leaves scooped out of the gutters'. This is an analogy for declarative programming.
+            You wouldnt tell the to pressure hose the tiles, scrub any extra bits of grit away with a wire brush, use a hand spade to scoop our the leaves from the gutter into the bin, get spray paint, etc. That there would be an imperative way of programming.
+
+        When we uses functional components react uses vanilla javascript behind the scenes to turn out jsx code into working html, css and js. React is built to be a declarative way of programming, so declaring things like the UI imperativly goes against the react philosophy and should be avoided whenever possible. But when things get rough, we have the useImperativeHandle() hook.
+
+    useImperativeHandle() is a hook which instead of passing state to a component that then changes the component (declarative), actually calls a function inside of a component in an imperative way.
+
+    Through useImperitiveHandle and React.forwardRef() we can expose a parent component to functions inside of the child component, to then use the child component inside of the parent component through refs and trigger certain functionalities. Also, not only functions actually but values.
+
+    We use this on something like an input, when the input is not called by html like code directly inside of the jsx, rather when it is a nested component. If it was just html like code inside of the parent, one - it wouldnt be the parent anymore and two - in that case we could just use a normal ref.
+
+    useImperativeHandler kinda makes an api which is only meant for the parent to access.
+
+    This really isn't as complicated as Max made it so heres the gist: 
+        React functional components do not have the ability to accept a ref prop. So to add this functionality we then wrap the functional component in another React function called React.forwardRef. 
+
+        This is how you declare a component using the React.forwardRef (this is the child component): 
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////
+
+            import React, { useState } from 'react';
+
+            const Input = React.forwardRef((props, ref) => {
+                const [state, setState] = useState();
+                const newFunction = () => {
+                    console.log('its valid!!!');
+                };
+
+                useImperativeHandle(ref, () => {
+                    return {
+                        state: state,
+                        newFunction: newFunction
+                    };
+                }); 
+            });
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////
+
+        In this example, you can see here that the useImperativeHandle is basically a hook that returns an object. This object is what is accessable from the parent component and can contain whatever values or functions you need from within that component. It takes in two arguments: 
+
+            The first is the ref, which don't forget, comes from the parent component, which you passed in alongside the props.
+
+            The second is a handle. Here we just made an empty arrow function which returns an object containing whatever values or functions we need.
+
+            It does take a optional third argument which is dependencies, but I will not be learning about there here.
+
+        So in the parent component all we really need to do is this.
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////
+
+        import { useRef } from 'react';
+
+        const ParentComponent = props => {
+            const inputRef = useRef();
+
+            if(props.isValid){
+                inputRef.current.newFunction();
+            }
+
+            return (
+                <>
+                    <Input ref={inputRef} />
+                </>
+            )
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////
+
+        See here we can access the newFunction() inside of the child component but from the parent with our inputRef.current.newFunction().
+
+        
 
 
 
